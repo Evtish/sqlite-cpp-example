@@ -2,44 +2,31 @@
 
 #ifdef _WIN32
 #include <Windows.h>
-#include <cstdlib>
-
-#include <iostream>
 
 #include "converter.hpp"
 
-// https://stackoverflow.com/questions/3074776/how-to-convert-char-array-to-wchar-t-array
-// Конвертирует строки C-стиля в std::wstring
-int conv_char_to_wstring(std::wstring &wstr, const char *str) {
-    if (!str) {
-		wstr = L"";
-		return 0;
-	}
+// Источник: https://stackoverflow.com/questions/215963/how-do-you-properly-use-widechartomultibyte
+// Конвертация широкой Unicode строки в UTF8 строку
+std::string utf8_encode(const std::wstring &wstr) {
+    if (wstr.empty())
+		return std::string();
 
-    int size_needed = MultiByteToWideChar(CP_UTF8, 0, str, -1, nullptr, 0); // Размер будущей std::wstring
-    if (size_needed == 0) {
-        std::wcerr << L"Ошибка при выполнении функции MultiByteToWideChar\n" << std::flush;
-		return 1;
-    }
+    int size_needed = WideCharToMultiByte(CP_UTF8, 0, wstr, (int) wstr.size(), NULL, 0, NULL, NULL);
+    std::string strTo(size_needed, 0);
+    WideCharToMultiByte(CP_UTF8, 0, wstr, (int) wstr.size(), strTo, size_needed, NULL, NULL);
 
-    wstr = std::wstring(size_needed - 1, L'\0'); // Заполнение строки нулевыми символами
-    MultiByteToWideChar(CP_UTF8, 0, str, -1, wstr, size_needed); // Конвертация
-    return 0;
+    return strTo;
 }
 
-// Конвертирует std::wstring в std::string
-int conv_wstring_to_string(std::string &str, const std::wstring &wstr) {
-	if (wstr.empty()) {
-		str = "";
-		return 0;
-	}
+// Конвертация UTF8 строки в широкую Unicode строку
+std::wstring utf8_decode(const std::string &str) {
+    if (str.empty())
+		return std::wstring();
 
-    int len = WideCharToMultiByte(CP_UTF8, 0, wstr.data(), (int) wstr.size(), nullptr, 0, nullptr, nullptr); // Размер будущей std::string
-    char *buffer = new char[len]; // Выделение буфера
-    WideCharToMultiByte(CP_UTF8, 0, wstr.data(), (int) wstr.size(), buffer, len, nullptr, nullptr); // Конвертация
-    std::string str(buffer);
+    int size_needed = MultiByteToWideChar(CP_UTF8, 0, str, (int) str.size(), NULL, 0);
+    std::wstring wstrTo(size_needed, 0);
+    MultiByteToWideChar(CP_UTF8, 0, str, (int) str.size(), wstrTo, size_needed);
 
-    delete[] buffer; // Очистка буфера
-    return str;
+    return wstrTo;
 }
 #endif

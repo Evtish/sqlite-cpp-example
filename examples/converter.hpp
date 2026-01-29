@@ -5,6 +5,6 @@
 
 #include <string>
 
-std::wstring conv_char_to_wstring(const char *text); // Конвертирует строки C-стиля в std::wstring
-std::string conv_wstring_to_string(const std::wstring &wstr); // Конвертирует std::wstring в std::string
+std::string utf8_encode(const std::wstring &wstr);
+std::wstring utf8_decode(const std::string &str);
 #endif
